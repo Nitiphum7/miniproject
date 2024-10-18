@@ -1,0 +1,107 @@
+\<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Sensor Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        #sensorData, #fallStatus {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>ESP32 Sensor Data</h1>
+    <div id="sensorData">Loading sensor data...</div>
+    <div id="fallStatus">Loading fall status...</div>
+
+    <script>
+        const sensorDataDiv = document.getElementById('sensorData');
+        const fallStatusDiv = document.getElementById('fallStatus');
+
+        // Function to fetch sensor data from the server
+        function fetchSensorData() {
+            fetch('http://192.168.137.84:3300/sensor-data', { 
+                method: 'GET',
+                headers: {
+                    'Authorization':'Bearer 86GJFCKzpSJyGSrFB35ZdBigidd81BxeKZodrLtkHjyshPSHsfjaMloNj8LiFZGIvREfpxMt17yni1nlWGcyi430AsuZQK1dvJ5JDqZhqMSgcM2XEd5HXm48P27lhIbx'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                displaySensorData(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                sensorDataDiv.innerHTML = 'Error fetching sensor data';
+            });
+        }
+
+        // Function to fetch fall status from the server
+        function fetchFallStatus() {
+            fetch('http://192.168.137.84:3300/fall-status', {
+                method: 'GET',
+                headers: {
+                    'Authorization':'Bearer 86GJFCKzpSJyGSrFB35ZdBigidd81BxeKZodrLtkHjyshPSHsfjaMloNj8LiFZGIvREfpxMt17yni1nlWGcyi430AsuZQK1dvJ5JDqZhqMSgcM2XEd5HXm48P27lhIbx'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                displayFallStatus(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                fallStatusDiv.innerHTML = 'Error fetching fall status';
+            });
+        }
+
+        // Function to display sensor data
+        function displaySensorData(data) {
+            sensorDataDiv.innerHTML = `
+                <h2>Current Sensor Data</h2>
+                <p><strong>Humidity:</strong> ${data.humidity} %</p>
+                <p><strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}</p>
+            `;
+        }
+
+        // Function to display fall status
+        function displayFallStatus(data) {
+            fallStatusDiv.innerHTML = `
+                <h2>Fall Status</h2>
+                <p><strong>Status:</strong> ${data.fall_status ? "Fallen" : "Standing"}</p>
+                <p><strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}</p>
+            `;
+        }
+
+        // Fetch sensor data and fall status immediately, then set up intervals
+        fetchSensorData();  // Fetch data immediately when the page loads
+        fetchFallStatus();  // Fetch fall status immediately when the page loads
+        setInterval(fetchSensorData, 5000);  // Continue fetching sensor data every 5 seconds
+        setInterval(fetchFallStatus, 5000);  // Continue fetching fall status every 5 seconds
+    </script>
+</body>
+</html>
